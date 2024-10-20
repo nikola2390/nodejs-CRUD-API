@@ -1,14 +1,8 @@
 import http from "node:http";
+import { configDotenv } from "dotenv";
 
-const PORT = 3000;
+configDotenv();
 
-const server = http.createServer((req, res) => {
-  res.writeHead(200, { "Content-Type": "application/json" });
-  res.end(
-    JSON.stringify({
-      data: "Hello World!",
-    })
-  );
-});
+const server = http.createServer((req, res) => {});
 
-server.listen(PORT);
+server.listen(process.env.PORT);
