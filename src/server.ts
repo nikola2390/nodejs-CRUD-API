@@ -16,7 +16,7 @@ import { parseURL, isUserDataValid } from "./utils";
 
 configDotenv();
 
-const users: User[] = [];
+let users: User[] = [];
 
 const server = http.createServer(async (req, res) => {
   const userID: string | undefined = parseURL(req.url!)[3];
@@ -79,6 +79,26 @@ const server = http.createServer(async (req, res) => {
           res.end();
         });
       }
+      break;
+    case HttpMethod.DELETE:
+      if (validateUuidv4(userID)) {
+        const deletedUser: User | undefined = users.find(
+          (user) => user.id === userID
+        );
+
+        if (deletedUser) {
+          res.statusCode = StatusCode.NO_CONTENT;
+          users = users.filter((user: User) => user.id !== deletedUser.id);
+        } else {
+          res.statusCode = StatusCode.NOT_FOUND;
+          res.write(JSON.stringify({ message: userNotExistsMessage }));
+        }
+      } else {
+        res.statusCode = StatusCode.BAD_REQUEST;
+        res.write(JSON.stringify({ message: invalidUserIdMessage }));
+      }
+
+      res.end();
       break;
     default:
       break;

@@ -14,6 +14,7 @@ export interface UserData {
 export enum StatusCode {
   OK = 200,
   CREATED = 201,
+  NO_CONTENT = 204,
   BAD_REQUEST = 400,
   NOT_FOUND = 404,
 }
@@ -21,6 +22,7 @@ export enum StatusCode {
 export enum HttpMethod {
   GET = "GET",
   POST = "POST",
+  DELETE = "DELETE",
 }
 
 export const userNotExistsMessage = "The requested user does not exist";
