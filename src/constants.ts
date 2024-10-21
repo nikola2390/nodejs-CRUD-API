@@ -32,3 +32,5 @@ export const invalidUserIdMessage = "User ID is invalid";
 
 export const notContainRequiredFieldsMessage =
   "Request does not contain required fields";
+
+export const pathNotExistMessage = "Incorrect entered path";

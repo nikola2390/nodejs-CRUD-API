@@ -10,6 +10,7 @@ import {
   invalidUserIdMessage,
   notContainRequiredFieldsMessage,
   UserData,
+  pathNotExistMessage,
 } from "./constants";
 
 import { parseURL, isUserDataValid } from "./utils";
@@ -20,6 +21,13 @@ let users: User[] = [];
 
 const server = http.createServer(async (req, res) => {
   const userID: string | undefined = parseURL(req.url!)[3];
+
+  if (!req.url!.startsWith("/api/users") || parseURL(req.url!).length > 4) {
+    res.statusCode = StatusCode.NOT_FOUND;
+    res.write(JSON.stringify({ message: pathNotExistMessage }));
+    res.end();
+    return;
+  }
 
   switch (req.method) {
     case HttpMethod.GET:
@@ -81,24 +89,26 @@ const server = http.createServer(async (req, res) => {
       }
       break;
     case HttpMethod.DELETE:
-      if (validateUuidv4(userID)) {
-        const deletedUser: User | undefined = users.find(
-          (user) => user.id === userID
-        );
+      if (req.url!.startsWith("/api/users")) {
+        if (validateUuidv4(userID)) {
+          const deletedUser: User | undefined = users.find(
+            (user) => user.id === userID
+          );
 
-        if (deletedUser) {
-          res.statusCode = StatusCode.NO_CONTENT;
-          users = users.filter((user: User) => user.id !== deletedUser.id);
+          if (deletedUser) {
+            res.statusCode = StatusCode.NO_CONTENT;
+            users = users.filter((user: User) => user.id !== deletedUser.id);
+          } else {
+            res.statusCode = StatusCode.NOT_FOUND;
+            res.write(JSON.stringify({ message: userNotExistsMessage }));
+          }
         } else {
-          res.statusCode = StatusCode.NOT_FOUND;
-          res.write(JSON.stringify({ message: userNotExistsMessage }));
+          res.statusCode = StatusCode.BAD_REQUEST;
+          res.write(JSON.stringify({ message: invalidUserIdMessage }));
         }
-      } else {
-        res.statusCode = StatusCode.BAD_REQUEST;
-        res.write(JSON.stringify({ message: invalidUserIdMessage }));
-      }
 
-      res.end();
+        res.end();
+      }
       break;
     case HttpMethod.PUT:
       if (req.url!.startsWith("/api/users")) {
