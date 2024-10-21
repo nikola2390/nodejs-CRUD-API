@@ -23,6 +23,7 @@ export enum HttpMethod {
   GET = "GET",
   POST = "POST",
   DELETE = "DELETE",
+  PUT = "PUT",
 }
 
 export const userNotExistsMessage = "The requested user does not exist";

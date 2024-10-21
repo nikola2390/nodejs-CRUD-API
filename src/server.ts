@@ -100,6 +100,49 @@ const server = http.createServer(async (req, res) => {
 
       res.end();
       break;
+    case HttpMethod.PUT:
+      if (req.url!.startsWith("/api/users")) {
+        let data = "";
+        let userData: UserData;
+        let updatedUser: User | undefined = users.find(
+          (user) => user.id === userID
+        );
+
+        if (updatedUser) {
+          const index = users.indexOf(updatedUser);
+
+          req.on("data", (chunk) => {
+            data += chunk;
+          });
+          req.on("end", () => {
+            userData = JSON.parse(data);
+
+            if (isUserDataValid(userData)) {
+              updatedUser = { id: updatedUser!.id, ...userData };
+              users[index] = updatedUser;
+
+              res.statusCode = StatusCode.OK;
+              res.write(JSON.stringify(updatedUser));
+            } else {
+              res.statusCode = StatusCode.BAD_REQUEST;
+              res.write(
+                JSON.stringify({ message: notContainRequiredFieldsMessage })
+              );
+            }
+
+            res.end();
+          });
+        } else if (!validateUuidv4(userID)) {
+          res.statusCode = StatusCode.BAD_REQUEST;
+          res.write(JSON.stringify({ message: invalidUserIdMessage }));
+          res.end();
+        } else {
+          res.statusCode = StatusCode.NOT_FOUND;
+          res.write(JSON.stringify({ message: userNotExistsMessage }));
+          res.end();
+        }
+      }
+      break;
     default:
       break;
   }
