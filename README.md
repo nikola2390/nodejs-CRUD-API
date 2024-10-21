@@ -10,3 +10,13 @@
 6. Rename `.env.example` file to `.env`
 7. Start development mode in accordance to scripts in `package.json`
 8. For requests you can use [`Postman`](https://www.postman.com/)
+9. Users have following properties:
+   - `id` — unique identifier
+   - `username` — user's name (**required**)
+   - `age` — user's age (**required**)
+   - `hobbies` — user's hobbies (**required**)
+10. To get all users use **GET** method and `api/users` endpoint
+11. To get specific user use **GET** method and `api/users/{userId}` endpoint
+12. To create user use **POST** method and `api/users` endpoint
+13. To update user use **PUT** method and `api/users/{userId}` endpoint. You should provide all fields which marked as **required**
+14. To delete user use **DELETE** method and `api/users/{userId}` endpoint
