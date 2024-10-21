@@ -8,49 +8,24 @@ import {
   HttpMethod,
   userNotExistsMessage,
   invalidUserIdMessage,
+  notContainRequiredFieldsMessage,
+  UserData,
 } from "./constants";
+
+import { parseURL, isUserDataValid } from "./utils";
 
 configDotenv();
 
-const users: User[] = [
-  {
-    id: uuidv4(),
-    username: "John",
-    age: 33,
-    hobbies: ["football"],
-  },
-  {
-    id: uuidv4(),
-    username: "Johns",
-    age: 22,
-    hobbies: [],
-  },
-  {
-    id: uuidv4(),
-    username: "Jo",
-    age: 34,
-    hobbies: ["one"],
-  },
-  {
-    id: uuidv4(),
-    username: "Joh",
-    age: 51,
-    hobbies: ["hobby1", "hobby2"],
-  },
-];
+const users: User[] = [];
 
-const parseURL = (url: string): string[] => {
-  return url.split("/");
-};
-
-const server = http.createServer((req, res) => {
+const server = http.createServer(async (req, res) => {
   const userID: string | undefined = parseURL(req.url!)[3];
 
   switch (req.method) {
     case HttpMethod.GET:
       if (req.url === "/api/users") {
-        res.write(JSON.stringify(users));
         res.statusCode = StatusCode.OK;
+        res.write(JSON.stringify(users));
       }
 
       if (req.url!.startsWith("/api/users") && validateUuidv4(userID)) {
@@ -65,17 +40,49 @@ const server = http.createServer((req, res) => {
         }
       }
 
-      if (req.url!.startsWith("/api/users") && !validateUuidv4(userID)) {
+      if (
+        req.url!.startsWith("/api/users") &&
+        !validateUuidv4(userID) &&
+        req.url !== "/api/users"
+      ) {
         res.statusCode = StatusCode.BAD_REQUEST;
         res.write(JSON.stringify({ message: invalidUserIdMessage }));
       }
+      res.end();
       break;
+    case HttpMethod.POST:
+      if (req.url === "/api/users") {
+        let data = "";
+        let userData: UserData;
+        let newUser: User;
 
+        req.on("data", (chunk) => {
+          data += chunk;
+        });
+        req.on("end", () => {
+          userData = JSON.parse(data);
+
+          if (isUserDataValid(userData)) {
+            newUser = { id: uuidv4(), ...userData };
+
+            users.push(newUser);
+
+            res.statusCode = StatusCode.CREATED;
+            res.write(JSON.stringify(newUser));
+          } else {
+            res.statusCode = StatusCode.BAD_REQUEST;
+            res.write(
+              JSON.stringify({ message: notContainRequiredFieldsMessage })
+            );
+          }
+
+          res.end();
+        });
+      }
+      break;
     default:
       break;
   }
-
-  res.end();
 });
 
 server.listen(process.env.PORT);
